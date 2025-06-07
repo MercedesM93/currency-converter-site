@@ -1,0 +1,23 @@
+const apiKey = "YOUR_API_KEY"; // Replace with your real key
+const url = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`;
+
+let rates = {};
+
+fetch(url)
+  .then(res => res.json())
+  .then(data => {
+    rates = data.conversion_rates;
+    const currencyOptions = Object.keys(rates)
+      .map(code => `<option value="${code}">${code}</option>`)
+      .join('');
+    document.getElementById('from').innerHTML = currencyOptions;
+    document.getElementById('to').innerHTML = currencyOptions;
+  });
+
+function convert() {
+  const amount = parseFloat(document.getElementById('amount').value);
+  const from = document.getElementById('from').value;
+  const to = document.getElementById('to').value;
+  const converted = amount * (rates[to] / rates[from]);
+  document.getElementById('result').textContent = `${amount} ${from} = ${converted.toFixed(2)} ${to}`;
+}
