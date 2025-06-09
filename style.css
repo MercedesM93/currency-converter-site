@@ -1,0 +1,39 @@
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a//dev/null b/style.css
+index 0000000000000000000000000000000000000000..f0815d5c04e15267871ba561413bd56dea5a861a 100644
+--- a//dev/null
++++ b/style.css
+@@ -0,0 +1,30 @@
++* {
++  box-sizing: border-box;
++}
++body {
++  font-family: Arial, sans-serif;
++  margin: 0;
++  padding: 20px;
++  background: #f4f4f4;
++}
++.container {
++  max-width: 500px;
++  margin: auto;
++  background: #fff;
++  padding: 20px;
++  border-radius: 8px;
++  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
++}
++form > * {
++  width: 100%;
++  margin: 10px 0;
++}
++button {
++  padding: 10px;
++}
++#chartContainer {
++  margin-top: 20px;
++}
++canvas {
++  max-width: 100%;
++}
+ 
+EOF
+)
