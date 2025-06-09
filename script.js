@@ -1,42 +1,51 @@
-const API_URL = 'https://api.exchangerate-api.com/v4/latest/';
-
-const currencyList = ["USD", "EUR", "GBP", "JPY", "AUD", "CAD", "INR", "ZAR"];
-
-const fromCurrency = document.getElementById('from-currency');
-const toCurrency = document.getElementById('to-currency');
-const amount = document.getElementById('amount');
-const result = document.getElementById('result');
-const convertBtn = document.getElementById('convert');
-
-currencyList.forEach(curr => {
-  const option1 = document.createElement('option');
-  option1.value = curr;
-  option1.textContent = curr;
-  fromCurrency.appendChild(option1);
-
-  const option2 = document.createElement('option');
-  option2.value = curr;
-  option2.textContent = curr;
-  toCurrency.appendChild(option2);
-});
-
-fromCurrency.value = 'USD';
-toCurrency.value = 'EUR';
-
-convertBtn.addEventListener('click', async () => {
-  const base = fromCurrency.value;
-  const target = toCurrency.value;
-  const amountValue = parseFloat(amount.value);
-
-  if (isNaN(amountValue)) {
-    result.textContent = 'Please enter a valid number';
-    return;
-  }
-
-  const response = await fetch(`${API_URL}${base}`);
-  const data = await response.json();
-  const rate = data.rates[target];
-  const converted = (amountValue * rate).toFixed(2);
-
-  result.textContent = `${amountValue} ${base} = ${converted} ${target}`;
-});
+diff --git a//dev/null b/script.js
+new file mode 100644
+index 0000000..b1e9e7d
+--- /dev/null
++++ b/script.js
+@@
++const API_KEY = "30dffd2aba9a6304dfb482c3";
++const API_URL = `https://v6.exchangerate-api.com/v6/${API_KEY}/latest/`;
++
++const fromCurrency = document.getElementById("from-currency");
++const toCurrency = document.getElementById("to-currency");
++const amount = document.getElementById("amount");
++const result = document.getElementById("result");
++const convertBtn = document.getElementById("convert");
++
++const currencies = ["USD", "EUR", "GBP", "JPY", "AUD", "CAD", "INR", "ZAR"];
++
++currencies.forEach(curr => {
++  fromCurrency.innerHTML += `<option value="${curr}">${curr}</option>`;
++  toCurrency.innerHTML += `<option value="${curr}">${curr}</option>`;
++});
++
++fromCurrency.value = "USD";
++toCurrency.value = "EUR";
++
++convertBtn.addEventListener("click", async () => {
++  const from = fromCurrency.value;
++  const to = toCurrency.value;
++  const amt = parseFloat(amount.value);
++
++  if (isNaN(amt)) {
++    result.innerText = "Please enter a valid number";
++    return;
++  }
++
++  const response = await fetch(`${API_URL}${from}`);
++  const data = await response.json();
++
++  if (data.result === "success") {
++    const rate = data.conversion_rates[to];
++    const converted = (amt * rate).toFixed(4);
++    const inverse = (1 / rate).toFixed(4);
++
++    result.innerHTML = `
++      ${amt} ${from} = <strong>${converted} ${to}</strong><br />
++      1 ${to} = ${inverse} ${from}
++    `;
++  } else {
++    result.innerText = "Failed to fetch exchange rates.";
++  }
++});
