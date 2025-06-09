@@ -1,92 +1,42 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
-diff --git a//dev/null b/script.js
-index 0000000000000000000000000000000000000000..b4942841e0de4b92fbbd174ceb387e1b8dd541ff 100644
---- a//dev/null
-+++ b/script.js
-@@ -0,0 +1,83 @@
-+document.addEventListener('DOMContentLoaded', () => {
-+  loadCurrencies();
-+});
-+
-+let chart;
-+
-+async function loadCurrencies() {
-+  try {
-+    const res = await fetch('https://api.exchangerate.host/symbols');
-+    const data = await res.json();
-+    const options = Object.keys(data.symbols)
-+      .map(code => `<option value="${code}">${code}</option>`)
-+      .join('');
-+    document.getElementById('from').innerHTML = options;
-+    document.getElementById('to').innerHTML = options;
-+    document.getElementById('from').value = 'USD';
-+    document.getElementById('to').value = 'EUR';
-+  } catch (err) {
-+    document.getElementById('result').textContent = 'Failed to load currencies.';
-+  }
-+}
-+
-+async function convert() {
-+  const amount = parseFloat(document.getElementById('amount').value);
-+  if (isNaN(amount)) {
-+    document.getElementById('result').textContent = 'Please enter a valid amount.';
-+    return;
-+  }
-+
-+  const from = document.getElementById('from').value;
-+  const to = document.getElementById('to').value;
-+
-+  try {
-+    const res = await fetch(`https://api.exchangerate.host/latest?base=${from}&symbols=${to}`);
-+    const data = await res.json();
-+    const rate = data.rates[to];
-+    const converted = amount * rate;
-+    document.getElementById('result').textContent = `${amount} ${from} = ${converted.toFixed(2)} ${to}`;
-+    document.getElementById('timestamp').textContent = `Rates from: ${data.date}`;
-+    drawChart(from, to);
-+  } catch (err) {
-+    document.getElementById('result').textContent = 'Conversion failed.';
-+    document.getElementById('timestamp').textContent = '';
-+  }
-+}
-+
-+async function drawChart(from, to) {
-+  try {
-+    const end = new Date();
-+    const start = new Date();
-+    start.setDate(end.getDate() - 6); // last 7 days including today
-+    const endStr = end.toISOString().slice(0,10);
-+    const startStr = start.toISOString().slice(0,10);
-+
-+    const res = await fetch(`https://api.exchangerate.host/timeseries?start_date=${startStr}&end_date=${endStr}&base=${from}&symbols=${to}`);
-+    const data = await res.json();
-+    const labels = Object.keys(data.rates).sort();
-+    const values = labels.map(d => data.rates[d][to]);
-+
-+    const ctx = document.getElementById('rateChart').getContext('2d');
-+    if (chart) chart.destroy();
-+    chart = new Chart(ctx, {
-+      type: 'line',
-+      data: {
-+        labels,
-+        datasets: [{
-+          label: `${from}/${to}`,
-+          data: values,
-+          borderColor: '#0074D9',
-+          fill: false
-+        }]
-+      },
-+      options: {
-+        responsive: true,
-+        scales: {
-+          y: { beginAtZero: false }
-+        }
-+      }
-+    });
-+  } catch (err) {
-+    console.error('Chart error', err);
-+  }
-+}
- 
-EOF
-)
+const API_URL = 'https://api.exchangerate-api.com/v4/latest/';
+
+const currencyList = ["USD", "EUR", "GBP", "JPY", "AUD", "CAD", "INR", "ZAR"];
+
+const fromCurrency = document.getElementById('from-currency');
+const toCurrency = document.getElementById('to-currency');
+const amount = document.getElementById('amount');
+const result = document.getElementById('result');
+const convertBtn = document.getElementById('convert');
+
+currencyList.forEach(curr => {
+  const option1 = document.createElement('option');
+  option1.value = curr;
+  option1.textContent = curr;
+  fromCurrency.appendChild(option1);
+
+  const option2 = document.createElement('option');
+  option2.value = curr;
+  option2.textContent = curr;
+  toCurrency.appendChild(option2);
+});
+
+fromCurrency.value = 'USD';
+toCurrency.value = 'EUR';
+
+convertBtn.addEventListener('click', async () => {
+  const base = fromCurrency.value;
+  const target = toCurrency.value;
+  const amountValue = parseFloat(amount.value);
+
+  if (isNaN(amountValue)) {
+    result.textContent = 'Please enter a valid number';
+    return;
+  }
+
+  const response = await fetch(`${API_URL}${base}`);
+  const data = await response.json();
+  const rate = data.rates[target];
+  const converted = (amountValue * rate).toFixed(2);
+
+  result.textContent = `${amountValue} ${base} = ${converted} ${target}`;
+});
